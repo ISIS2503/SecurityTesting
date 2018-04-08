@@ -28,6 +28,7 @@ boolean compareKey(String key) {
       acc+=2;
       codif>>=1;
     }
+    acc=(i+1)*16+3;
   }
   return false;
 }
