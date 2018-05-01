@@ -7,7 +7,15 @@ void setup()
 
 void loop()
 {
+  String command = "CHANGE_PASSWORD;01;8976";
+  String result[3];
 
+  Serial.println(command.length());
+  processCommand(result, command);
+
+  for(int i=0; i<3; i++)
+    Serial.println(result[i]);  
+  delay(2000);
 }
 
 // Method that compares a key with stored keys
@@ -19,9 +27,24 @@ boolean compareKey(String key) {
     while(codif!=0) {
       if(codif%2==1) {
         arg0 = EEPROM.read(acc);
-        arg1 = EEPROM.read(acc+1)*256;
+        arg1 = EEPROM.read(acc+1);
+        String compose = "";
+        arg1*=256;
         arg1+= arg0;
-        if(String(arg1)==key) {
+        if(sizeof(String(arg1)) == 1) {
+          compose = "000"+String(arg0);
+        }
+        else if(sizeof(String(arg1)) == 2) {
+          compose = "00"+String(arg0);
+        }
+        else if(sizeof(String(arg1))==3) {
+          compose = "0"+String(arg1);
+        }
+        else {
+          compose = String(arg1);
+        }
+
+        if(compose==key) {
           return true;
         }
       }
@@ -34,15 +57,16 @@ boolean compareKey(String key) {
 
 // Methods that divides the command by parameters
 void processCommand(String* result, String command) {
-  char buf[sizeof(command)];
-  String vars = "";
-  vars.toCharArray(buf, sizeof(buf));
-  char *p = buf;
-  char *str;
   int i = 0;
-  while ((str = strtok_r(p, ";", &p)) != NULL) {
-    // delimiter is the semicolon
-    result[i++] = str;
+  char* token;
+  char buf[command.length() + 1];
+
+  command.toCharArray(buf, sizeof(buf));
+  token = strtok(buf, ";");
+
+  while(token != NULL) {
+    result[i++] = token;
+    token = strtok(NULL, ";");
   }
 }
 
